@@ -1,9 +1,13 @@
 import GameCardGrid from "@/components/GameCardSection/GameCardGrid";
 
-export default function HomePage() {
+export default async function HomePage({ searchParams }) {
+  const params = await searchParams;
+  console.log(params);
+  
+  
   return (
     <main>
-      <GameCardGrid />
+      <GameCardGrid type={params.type} />
     </main>
   );
 }

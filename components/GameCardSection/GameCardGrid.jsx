@@ -1,8 +1,15 @@
 import GameCard from "./GameCard";
 import { supabase } from "@/lib/supabase";
 
-export default async function GameCardGrid() {
-  const { data: games, error } = await supabase.from("games").select("*");
+export default async function GameCardGrid({ type }) {
+  console.log(type);
+  let query = supabase.from("games").select("*");
+
+  if (type) {
+    query = query.eq("type", type);
+  }
+
+  const { data: games, error } = await query;
 
   if (error) {
     return <h1 className="text-white text-center mt-10">{error.message}</h1>;
