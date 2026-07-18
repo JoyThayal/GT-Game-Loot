@@ -1,12 +1,29 @@
 import GameCard from "./GameCard";
 import { supabase } from "@/lib/supabase";
 
-export default async function GameCardGrid({ type }) {
-  console.log(type);
+export default async function GameCardGrid({ type, search, platforms, sort }) {
+  console.log("Type:", type, "Search:", search);
   let query = supabase.from("games").select("*");
 
   if (type) {
     query = query.eq("type", type);
+  }
+
+  if (search && search.trim() !== "") {
+    query = query.ilike("title", `%${search}%`);
+  }
+
+  if (platforms && platforms.trim() !== "") {
+    query = query.ilike("platforms", `%${platforms.trim()}%`);
+  }
+
+  if (sort === "highest-worth") {
+    query = query.order("worth", { ascending: false, nullsFirst: false });
+  } else {
+    query = query.order("published_date", {
+      ascending: false,
+      nullsFirst: false,
+    });
   }
 
   const { data: games, error } = await query;
@@ -16,10 +33,16 @@ export default async function GameCardGrid({ type }) {
   }
 
   return (
-    <section className="min-h-screen bg-slate-950 p-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-25">
-      {games?.map((game) => (
-        <GameCard key={game.id} game={game} />
-      ))}
+    <section className="min-h-screen bg-slate-950 px-4 py-8">
+      {games && games.length > 0 ? (
+        <div className="mx-auto grid max-w-8xl gap-6 grid-cols-[repeat(auto-fit,minmax(300px,1fr))]">
+          {games?.map((game) => (
+            <GameCard key={game.id} game={game} />
+          ))}
+        </div>
+      ) : (
+        <h1 className="text-white text-center mt-10">No Games Found</h1>
+      )}
     </section>
   );
 }

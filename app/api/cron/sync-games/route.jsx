@@ -10,21 +10,29 @@ export async function GET() {
 
     const liveGameIds = gamesData.map((game) => game.id);
 
-    const games = gamesData.map((game) => ({
-      id: game.id,
-      title: game.title,
-      description: game.description,
-      thumbnail: game.thumbnail,
-      worth: game.worth,
-      published_date:
-        game.published_date === "N/A" ? null : game.published_date,
-      type: game.type,
-      platforms: game.platforms,
-      end_date: game.end_date === "N/A" ? null : game.end_date,
-      open_giveaway_url: game.open_giveaway_url,
-      image: game.image,
-      status: game.status,
-    }));
+    const games = gamesData.map((game) => {
+      let formattedWorth = null;
+      if (game.worth && game.worth !== "N/A") {
+        const cleanPrice = game.worth.replace(/[^0-9.]/g, "");
+        formattedWorth = cleanPrice ? parseFloat(cleanPrice) : null;
+      }
+
+      return {
+        id: game.id,
+        title: game.title,
+        description: game.description,
+        thumbnail: game.thumbnail,
+        worth: formattedWorth,
+        published_date:
+          game.published_date === "N/A" ? null : game.published_date,
+        type: game.type,
+        platforms: game.platforms,
+        end_date: game.end_date === "N/A" ? null : game.end_date,
+        open_giveaway_url: game.open_giveaway_url,
+        image: game.image,
+        status: game.status,
+      };
+    });
 
     const { error: upsertError } = await supabase
       .from("games")
