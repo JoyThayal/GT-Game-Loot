@@ -8,6 +8,8 @@ export async function GET() {
     const response = await fetch("https://www.gamerpower.com/api/giveaways");
     const gamesData = await response.json();
 
+    const liveGameIds = gamesData.map((game) => game.id);
+
     const games = gamesData.map((game) => ({
       id: game.id,
       title: game.title,
@@ -24,19 +26,31 @@ export async function GET() {
       status: game.status,
     }));
 
-    const { error } = await supabase.from("games").upsert(games, {
-      onConflict: "id",
-    });
+    const { error: upsertError } = await supabase
+      .from("games")
+      .upsert(games, { onConflict: "id" });
 
-    if (error) {
-      console.log(error);
-    } else {
-      console.log("Success");
+    if (upsertError) {
+      console.error("Upsert Error:", upsertError);
+      throw upsertError;
+    }
+
+    if (liveGameIds.length > 0) {
+      const { error: deleteError } = await supabase
+        .from("games")
+        .delete()
+        .not("id", "in", `(${liveGameIds.join(",")})`);
+
+      if (deleteError) {
+        console.error("Delete Error:", deleteError);
+      } else {
+        console.log("Expired games cleaned up successfully! 🧹");
+      }
     }
 
     return NextResponse.json({
       success: true,
-      message: "সব API থেকে ডেটা সফলভাবে সিঙ্ক হয়েছে! 🚀",
+      message: "সব ডেটা সফলভাবে সিঙ্ক এবং এক্সপায়ারড গেম পরিষ্কার হয়েছে! 🚀",
     });
   } catch (error) {
     return NextResponse.json({
