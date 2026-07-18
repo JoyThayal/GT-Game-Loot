@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 
@@ -12,7 +14,8 @@ export async function GET() {
       description: game.description,
       thumbnail: game.thumbnail,
       worth: game.worth,
-      published_date: game.published_date === "N/A" ? null : game.published_date,
+      published_date:
+        game.published_date === "N/A" ? null : game.published_date,
       type: game.type,
       platforms: game.platforms,
       end_date: game.end_date === "N/A" ? null : game.end_date,
