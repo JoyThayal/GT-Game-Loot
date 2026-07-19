@@ -10,6 +10,7 @@ const filters = [
   { label: "DLC", type: "DLC" },
   { label: "Early Access", type: "Early Access" },
   { label: "Other", type: "Other" },
+  { label: "Expiring Soon", type: "expiring" },
 ];
 
 function NavbarContent() {
@@ -39,12 +40,11 @@ function NavbarContent() {
 
   return (
     <header className="fixed top-0 left-0 w-full z-50 bg-slate-950/80 backdrop-blur-md border-b border-slate-800">
-      {/* ⏳ ৪. ম্যাজিক প্রোগ্রেস বার: যখনই কোনো ফিল্টার বা সার্চ লোড হবে, এই লাইনটা টপে জ্বলবে */}
       {isPending && (
         <div className="absolute top-0 left-0 h-0.75 bg-cyan-400 animate-pulse w-full z-50 shadow-[0_0_10px_#06b6d4]" />
       )}
 
-      <div className="max-w-7xl mx-auto px-4 py-4">
+      <div className="max-w-8xl mx-auto px-4 py-4">
         {/* Top */}
         <div className="flex items-center justify-between gap-4">
           <h1 className="text-xl md:text-2xl font-bold text-cyan-400">
@@ -77,21 +77,32 @@ function NavbarContent() {
 
           {/* Desktop Filters */}
           <div className="hidden lg:flex gap-3">
-            {filters.map((filter) => (
-              <button
-                key={filter.label}
-                onClick={() => handleFilterClick(filter.type)}
-                className={`px-4 py-2 rounded-lg border transition-all duration-200 active:scale-95 font-semibold ${
-                  isPending ? "opacity-70 cursor-not-allowed" : ""
-                } ${
-                  type === filter.type || (!type && filter.type === null)
-                    ? "bg-cyan-500 text-black border-cyan-500"
-                    : "bg-slate-800 border-slate-700 text-white hover:bg-cyan-500/20 hover:border-cyan-500"
-                }`}
-              >
-                {filter.label}
-              </button>
-            ))}
+            {filters.map((filter) => {
+              // 👈 ১. চেক করছি এটা আমাদের সেই স্পেশাল বাটন কি না
+              const isExpiring = filter.type === "expiring";
+              const isActive =
+                type === filter.type || (!type && filter.type === null);
+
+              return (
+                <button
+                  key={filter.label}
+                  onClick={() => handleFilterClick(filter.type)}
+                  className={`px-4 py-2 rounded-lg border transition-all duration-200 active:scale-95 font-semibold ${
+                    isPending ? "opacity-70 cursor-not-allowed" : ""
+                  } ${
+                    isActive
+                      ? isExpiring
+                        ? "bg-rose-500 text-white border-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.6)]" // একটিভ থাকলে লাল গ্লো
+                        : "bg-cyan-500 text-black border-cyan-500" // নরমাল একটিভ
+                      : isExpiring
+                        ? "bg-rose-800 border-rose-500 text-white hover:bg-rose-500 hover:border-rose-500 hover:animate-none shadow-[inset_0_0_8px_rgba(244,63,94,0.1)] animate-pulse" // ইন-একটিভ লাল বাটন
+                        : "bg-slate-800 border-slate-700 text-white hover:bg-cyan-500/20 hover:border-cyan-500" // নরমাল ইন-একটিভ
+                  }`}
+                >
+                  {filter.label}
+                </button>
+              );
+            })}
           </div>
 
           {/* Mobile Menu Button */}
@@ -130,23 +141,33 @@ function NavbarContent() {
               <Search className="text-cyan-400" size={20} />
             </div>
 
-            {/* Filters */}
+            {/* Mobile Filters */}
             <div className="flex flex-col gap-3">
-              {filters.map((filter) => (
-                <button
-                  key={filter.label}
-                  onClick={() => handleFilterClick(filter.type)}
-                  className={`px-4 py-3 rounded-lg border text-center transition ${
-                    isPending ? "opacity-70 cursor-not-allowed" : ""
-                  } ${
-                    type === filter.type || (!type && filter.type === null)
-                      ? "bg-cyan-500 text-black border-cyan-500 font-semibold"
-                      : "bg-slate-800 border-slate-700 text-white hover:bg-cyan-500/20 hover:border-cyan-500"
-                  }`}
-                >
-                  {filter.label}
-                </button>
-              ))}
+              {filters.map((filter) => {
+                const isExpiring = filter.type === "expiring";
+                const isActive =
+                  type === filter.type || (!type && filter.type === null);
+
+                return (
+                  <button
+                    key={filter.label}
+                    onClick={() => handleFilterClick(filter.type)}
+                    className={`px-4 py-3 rounded-lg border text-center transition ${
+                      isPending ? "opacity-70 cursor-not-allowed" : ""
+                    } ${
+                      isActive
+                        ? isExpiring
+                          ? "bg-rose-500 text-white border-rose-500 font-semibold shadow-[0_0_15px_rgba(244,63,94,0.5)]"
+                          : "bg-cyan-500 text-black border-cyan-500 font-semibold"
+                        : isExpiring
+                          ? "bg-rose-800 border-rose-500 text-white hover:bg-rose-500 hover:border-rose-500 hover:animate-none shadow-[inset_0_0_8px_rgba(244,63,94,0.1)] animate-pulse"
+                          : "bg-slate-800 border-slate-700 text-white hover:bg-cyan-500/20 hover:border-cyan-500"
+                    }`}
+                  >
+                    {filter.label}
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}

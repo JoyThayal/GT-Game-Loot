@@ -8,9 +8,18 @@ export async function GET() {
     const response = await fetch("https://www.gamerpower.com/api/giveaways");
     const gamesData = await response.json();
 
-    const liveGameIds = gamesData.map((game) => game.id);
+    const now = new Date();
 
-    const games = gamesData.map((game) => {
+    const activeGamesData = gamesData.filter((game) => {
+      if (!game.end_date || game.end_date === "N/A") return true;
+
+      const endDate = new Date(game.end_date);
+      return endDate > now; 
+    });
+
+    const liveGameIds = activeGamesData.map((game) => game.id);
+
+    const games = activeGamesData.map((game) => {
       let formattedWorth = null;
       if (game.worth && game.worth !== "N/A") {
         const cleanPrice = game.worth.replace(/[^0-9.]/g, "");
@@ -52,13 +61,16 @@ export async function GET() {
       if (deleteError) {
         console.error("Delete Error:", deleteError);
       } else {
-        console.log("Expired games cleaned up successfully! 🧹");
+        console.log(
+          "Expired games cleaned up successfully from Database! 🧹✨",
+        );
       }
     }
 
     return NextResponse.json({
       success: true,
-      message: "সব ডেটা সফলভাবে সিঙ্ক এবং এক্সপায়ারড গেম পরিষ্কার হয়েছে! 🚀",
+      message:
+        "সব ডেটা সফলভাবে সিঙ্ক এবং এক্সপায়ারড গেম ডাটাবেস থেকে পরিষ্কার হয়েছে! 🚀",
     });
   } catch (error) {
     return NextResponse.json({
