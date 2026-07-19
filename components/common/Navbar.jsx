@@ -1,9 +1,8 @@
 "use client";
 
 import { Menu, Search, X } from "lucide-react";
-import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Suspense, useState } from "react";
+import { Suspense, useState, useTransition } from "react"; // 👈 ১. useTransition নিলাম
 
 const filters = [
   { label: "All Giveaways", type: null },
@@ -21,8 +20,30 @@ function NavbarContent() {
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState("");
 
+  // 👈 ২. ট্রানজিশন স্টেট ডিফাইন করলাম (isPending তখন ট্রু হবে যখন পেজ লোড হচ্ছে)
+  const [isPending, startTransition] = useTransition();
+
+  // 👈 ৩. ফিল্টার হ্যান্ডেল করার জন্য স্মুথ ফাংশন
+  const handleFilterClick = (filterType) => {
+    setIsOpen(false);
+
+    // startTransition-এর ভেতরে পুশ করলে ক্লিক করার সাথে সাথে প্রোগ্রেস বার চালু হবে
+    startTransition(() => {
+      if (filterType) {
+        router.push(`/?type=${encodeURIComponent(filterType)}`);
+      } else {
+        router.push("/");
+      }
+    });
+  };
+
   return (
     <header className="fixed top-0 left-0 w-full z-50 bg-slate-950/80 backdrop-blur-md border-b border-slate-800">
+      {/* ⏳ ৪. ম্যাজিক প্রোগ্রেস বার: যখনই কোনো ফিল্টার বা সার্চ লোড হবে, এই লাইনটা টপে জ্বলবে */}
+      {isPending && (
+        <div className="absolute top-0 left-0 h-0.75 bg-cyan-400 animate-pulse w-full z-50 shadow-[0_0_10px_#06b6d4]" />
+      )}
+
       <div className="max-w-7xl mx-auto px-4 py-4">
         {/* Top */}
         <div className="flex items-center justify-between gap-4">
@@ -38,14 +59,17 @@ function NavbarContent() {
               className="flex-1 bg-transparent outline-none text-white placeholder:text-slate-400"
               value={search}
               onChange={(e) => {
-                const value = e.target.value
+                const value = e.target.value;
                 setSearch(value);
 
-                if (value.trim() !== "") {
-                  router.push(`/?search=${encodeURIComponent(value.trim())}`)
-                } else {
-                  router.push("/")
-                }
+                // সার্চের সময়ও প্রোগ্রেস বারকে একটিভ করছি
+                startTransition(() => {
+                  if (value.trim() !== "") {
+                    router.push(`/?search=${encodeURIComponent(value.trim())}`);
+                  } else {
+                    router.push("/");
+                  }
+                });
               }}
             />
             <Search className="text-cyan-400" size={20} />
@@ -54,21 +78,19 @@ function NavbarContent() {
           {/* Desktop Filters */}
           <div className="hidden lg:flex gap-3">
             {filters.map((filter) => (
-              <Link
+              <button
                 key={filter.label}
-                href={
-                  filter.type
-                    ? `/?type=${encodeURIComponent(filter.type)}`
-                    : "/"
-                }
+                onClick={() => handleFilterClick(filter.type)}
                 className={`px-4 py-2 rounded-lg border transition-all duration-200 active:scale-95 font-semibold ${
+                  isPending ? "opacity-70 cursor-not-allowed" : ""
+                } ${
                   type === filter.type || (!type && filter.type === null)
                     ? "bg-cyan-500 text-black border-cyan-500"
                     : "bg-slate-800 border-slate-700 text-white hover:bg-cyan-500/20 hover:border-cyan-500"
                 }`}
               >
                 {filter.label}
-              </Link>
+              </button>
             ))}
           </div>
 
@@ -91,7 +113,19 @@ function NavbarContent() {
                 placeholder="Search Game..."
                 className="flex-1 bg-transparent outline-none text-white placeholder:text-slate-400"
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setSearch(value);
+                  startTransition(() => {
+                    if (value.trim() !== "") {
+                      router.push(
+                        `/?search=${encodeURIComponent(value.trim())}`,
+                      );
+                    } else {
+                      router.push("/");
+                    }
+                  });
+                }}
               />
               <Search className="text-cyan-400" size={20} />
             </div>
@@ -99,22 +133,19 @@ function NavbarContent() {
             {/* Filters */}
             <div className="flex flex-col gap-3">
               {filters.map((filter) => (
-                <Link
+                <button
                   key={filter.label}
-                  href={
-                    filter.type
-                      ? `/?type=${encodeURIComponent(filter.type)}`
-                      : "/"
-                  }
-                  onClick={() => setIsOpen(false)}
+                  onClick={() => handleFilterClick(filter.type)}
                   className={`px-4 py-3 rounded-lg border text-center transition ${
+                    isPending ? "opacity-70 cursor-not-allowed" : ""
+                  } ${
                     type === filter.type || (!type && filter.type === null)
                       ? "bg-cyan-500 text-black border-cyan-500 font-semibold"
                       : "bg-slate-800 border-slate-700 text-white hover:bg-cyan-500/20 hover:border-cyan-500"
                   }`}
                 >
                   {filter.label}
-                </Link>
+                </button>
               ))}
             </div>
           </div>
