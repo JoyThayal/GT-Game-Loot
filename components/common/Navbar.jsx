@@ -1,6 +1,6 @@
 "use client";
 
-import { Menu, Search, X } from "lucide-react";
+import { Menu, Search, X, Gamepad2 } from "lucide-react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Suspense, useState, useTransition } from "react"; // 👈 ১. useTransition নিলাম
 
@@ -47,9 +47,12 @@ function NavbarContent() {
       <div className="max-w-8xl mx-auto px-4 py-4">
         {/* Top */}
         <div className="flex items-center justify-between gap-4">
-          <h1 className="text-xl md:text-2xl font-bold text-cyan-400">
-            GT Game Loot
-          </h1>
+          <div className="flex items-center gap-2">
+            <Gamepad2 className="text-cyan-400" size={28} />
+            <h1 className="text-xl md:text-2xl font-extrabold text-cyan-400 uppercase">
+              GT Game Loot
+            </h1>
+          </div>
 
           {/* Desktop Search */}
           <div className="hidden lg:flex items-center bg-slate-800 rounded-lg px-4 py-2 w-80">

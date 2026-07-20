@@ -4,6 +4,7 @@ import "./globals.css";
 import { Suspense } from "react";
 import Navbar from "@/components/common/Navbar";
 import Footer from "@/components/common/Footer";
+import { Analytics } from "@vercel/analytics/react";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,6 +37,7 @@ export default function RootLayout({
         </Suspense>
         {children}
         <Footer />
+        <Analytics />
       </body>
     </html>
   );
